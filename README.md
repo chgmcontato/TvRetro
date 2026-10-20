@@ -2,7 +2,7 @@
 
 O TvRetro é uma tela inicial (launcher) leve para Android TV. Ela mostra seus aplicativos do dia a dia (Netflix, YouTube etc.), uma biblioteca de jogos de SNES e PlayStation com capas baixadas automaticamente, um monitor de memória e rede, e uma tela para enviar jogos do celular ou do computador para a TV. Se a sua TV ainda está de fábrica, o projeto também traz uma **limpeza guiada e reversível** dos apps que você não usa.
 
-É um projeto pessoal **experimental/beta**, feito aos poucos com ajuda de IA e testado em uma **TCL Android TV 11**. Em outras TVs pode funcionar ou não: leia a seção [Validação e limites](#validação-e-limites).
+É um projeto pessoal, feito aos poucos com ajuda de IA e testado em uma **TCL Android TV 11**. Em outras TVs pode funcionar ou não: leia a seção [Validação e limites](#validação-e-limites).
 
 > **Aviso legal.** Este repositório **não contém nem indica ROMs ou BIOS**. Use apenas jogos que você tem direito de usar (por exemplo, backups de cartuchos e discos que você possui). Você é responsável pelo que instala na sua TV.
 
