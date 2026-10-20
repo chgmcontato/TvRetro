@@ -16,13 +16,15 @@ public final class LocalTransferServer implements Closeable {
  private final Set<Socket> sockets=Collections.synchronizedSet(new HashSet<Socket>());
  private final ThreadPoolExecutor workers=new ThreadPoolExecutor(2,2,0,TimeUnit.SECONDS,new ArrayBlockingQueue<Runnable>(4));
  private final AtomicBoolean uploading=new AtomicBoolean();private volatile boolean closed;
+ private volatile long lastActivity=System.nanoTime();
  public final String token;
  public LocalTransferServer(File root,long reserve,Observer observer)throws IOException{
   this.root=root;this.reserve=reserve;this.observer=observer;
   if(!root.isDirectory()&&!root.mkdirs())throw new IOException("Não foi possível criar a pasta Games.");
   byte[] random=new byte[16];new SecureRandom().nextBytes(random);StringBuilder t=new StringBuilder();for(byte b:random)t.append(String.format(Locale.ROOT,"%02x",b&255));token=t.toString();
-  server=new ServerSocket(0);Thread accept=new Thread(()->{while(!closed)try{Socket s=server.accept();s.setSoTimeout(30000);sockets.add(s);try{workers.execute(()->handle(s));}catch(RejectedExecutionException e){sockets.remove(s);s.close();}}catch(IOException e){if(!closed)observer.update("Recebimento interrompido: "+e.getMessage());}},"TvRetro-transfer");accept.setDaemon(true);accept.start();
+  server=new ServerSocket(0);Thread accept=new Thread(()->{while(!closed)try{Socket s=server.accept();lastActivity=System.nanoTime();s.setSoTimeout(30000);sockets.add(s);try{workers.execute(()->handle(s));}catch(RejectedExecutionException e){sockets.remove(s);s.close();}}catch(IOException e){if(!closed)observer.update("Recebimento interrompido: "+e.getMessage());}},"TvRetro-transfer");accept.setDaemon(true);accept.start();
  }
+ public long idleMillis(){return TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-lastActivity);}
  public int port(){return server.getLocalPort();}
  private String line(InputStream in,long deadline)throws IOException{ByteArrayOutputStream b=new ByteArrayOutputStream();for(int n=0;n<8192;n++){if(System.nanoTime()>deadline)throw new IOException("Prazo de cabeçalho excedido");int c=in.read();if(c<0)throw new EOFException();if(c==10)return new String(b.toByteArray(),StandardCharsets.US_ASCII).replace("\r","");b.write(c);}throw new IOException("Cabeçalho muito longo");}
  private void handle(Socket socket){File temporary=null;boolean locked=false;try{
@@ -46,7 +48,7 @@ public final class LocalTransferServer implements Closeable {
   File dir=new File(root,console);if(!dir.isDirectory()&&!dir.mkdirs())throw new IOException("Não foi possível criar a pasta do console");File target=new File(dir,name);if(target.exists()){reply(out,409,"Já existe um arquivo com esse nome; nada foi substituído.");return;}
   if(checking){reply(out,200,"Pronto para receber");return;}
   temporary=File.createTempFile("incoming-",".part",dir);observer.update("Recebendo: "+name);
-  socket.setSoTimeout(30000);long uploadDeadline=System.nanoTime()+TimeUnit.MINUTES.toNanos(8);long received=0,lastUpdate=0;try(FileOutputStream file=new FileOutputStream(temporary)){byte[] buffer=new byte[65536];while(received<length){if(System.nanoTime()>uploadDeadline)throw new IOException("Prazo do envio excedido");int read=in.read(buffer,0,(int)Math.min(buffer.length,length-received));if(read<0)throw new EOFException("Envio interrompido");file.write(buffer,0,read);received+=read;if(received-lastUpdate>=4*1024*1024){if(root.getUsableSpace()<reserve)throw new IOException("A reserva de espaço livre foi atingida");observer.update("Recebendo "+name+": "+(received*100/length)+"%");lastUpdate=received;}}file.getFD().sync();}
+  socket.setSoTimeout(30000);long uploadDeadline=System.nanoTime()+TimeUnit.MINUTES.toNanos(8);long received=0,lastUpdate=0;try(FileOutputStream file=new FileOutputStream(temporary)){byte[] buffer=new byte[65536];while(received<length){if(System.nanoTime()>uploadDeadline)throw new IOException("Prazo do envio excedido");int read=in.read(buffer,0,(int)Math.min(buffer.length,length-received));if(read<0)throw new EOFException("Envio interrompido");lastActivity=System.nanoTime();file.write(buffer,0,read);received+=read;if(received-lastUpdate>=4*1024*1024){if(root.getUsableSpace()<reserve)throw new IOException("A reserva de espaço livre foi atingida");observer.update("Recebendo "+name+": "+(received*100/length)+"%");lastUpdate=received;}}file.getFD().sync();}
   if(closed)throw new IOException("Sessão encerrada");if(target.exists()||!temporary.renameTo(target))throw new IOException("Não foi possível concluir o arquivo");temporary=null;
   observer.update("Recebido: "+name+". Pode enviar outro arquivo ou voltar à biblioteca.");reply(out,200,"Recebido: "+name);
  }catch(Exception e){if(!closed)observer.update("Envio não concluído: "+e.getMessage());try{reply(socket.getOutputStream(),400,"Envio interrompido ou inválido; tente novamente.");}catch(Exception ignored){}}

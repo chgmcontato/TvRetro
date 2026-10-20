@@ -46,4 +46,18 @@ try:
 finally:
  p.stdin.write('\n');p.stdin.flush();p.wait(timeout=10)
 
+# Short idle threshold exercises monotonic activity tracking without a ten-minute wait.
+p=subprocess.Popen([str(java),'-cp',str(classes),'Harness',str(root),'0','2000'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True)
+port,token=p.stdout.readline().split();port=int(port);base='/'+token
+try:
+ for _ in range(4):
+  time.sleep(1);assert req('GET',base)[0]==200
+ time.sleep(2.4)
+ try:
+  c=socket.create_connection(('127.0.0.1',port),timeout=1);c.close()
+  raise AssertionError('Servidor continuou aceitando conexões após inatividade')
+ except ConnectionRefusedError: pass
+ print('Atividade mantém a sessão; inatividade fecha o socket (limite de teste: 2 s).')
+finally:
+ p.stdin.write('\n');p.stdin.flush();p.wait(timeout=10)
 sandbox.cleanup()
