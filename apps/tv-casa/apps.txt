@@ -1,0 +1,6 @@
+com.crunchyroll.crunchyroid
+com.google.android.youtube.tv
+com.disney.disneyplus
+com.wbd.stream
+com.netflix.ninja
+com.amazon.amazonvideo.livingroom

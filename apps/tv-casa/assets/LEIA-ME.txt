@@ -1,0 +1,1 @@
+Assets opcionais e privados: fonts/Courier_New.ttf, fonts/Courier_New_Bold.ttf, backgrounds/home.jpg e covers/*.png. Sem esses arquivos, a home usa fonte monoespaçada e fundo sólido. Nenhuma ROM é distribuída.
