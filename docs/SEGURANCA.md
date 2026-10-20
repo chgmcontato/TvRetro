@@ -27,3 +27,9 @@ HTTPS somente para thumbnails.libretro.com, sem redirecionamento/ROM upload; cat
 
 ## Debloat (opcional)
 `tools/debloat/tvretro-debloat.sh` só desativa pacotes (`pm disable-user --user 0`), nunca desinstala; pede confirmação item a item, respeita uma lista de pacotes protegidos e a lista de apps do usuário, registra tudo e permite desfazer. Pacotes de fabricantes não entram sozinhos: vão para um relatório de revisão. Veja docs/DEBLOAT.md.
+
+## Receptor 0.9.1
+
+A sessão encerra ao sair da tela, após 10 minutos sem atividade (verificação a cada 10 segundos) ou após 60 minutos absolutos. Conexões aceitas e leituras do corpo renovam a atividade. O limite de 8 minutos por upload permanece. Os callbacks são cancelados ao encerrar.
+
+POSTs rejeitados com corpo pendente recebem a resposta antes de shutdownOutput e descarte limitado a 16 MiB ou 3 segundos. GETs não passam pelo descarte. Arquivos parciais, trava de envio e sockets são liberados no finally. Erros internos ficam apenas no observer; o cliente recebe mensagens fixas e status HTTP apropriados.

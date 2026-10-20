@@ -341,7 +341,7 @@ ZIP e RAR **não são extraídos**: extraia antes. Para PlayStation, prefira CHD
 1. Na TV, abra **TvRetro → Jogos → Enviar jogos → Iniciar recebimento**.
 2. A TV mostra um endereço temporário do tipo `http://192.168.x.x:porta/código`. Abra-o no navegador do celular ou do computador (mesma rede).
 3. Escolha **SNES** ou **PSX**, selecione os arquivos e envie. Mantenha a tela da TV aberta.
-4. Arquivos que já existem **não são substituídos**. O limite é de 2 GiB por arquivo, e a sessão encerra sozinha após alguns minutos (envie poucos arquivos grandes por sessão).
+4. Arquivos que já existem **não são substituídos**. O limite é de 2 GiB por arquivo, e a sessão encerra após **10 minutos sem atividade**, ao sair da tela ou após o teto absoluto de 60 minutos. Cada upload tem prazo máximo de 8 minutos.
 5. Volte à biblioteca ou toque em **Atualizar biblioteca**.
 
 ### Sem pendrive: copiar pelo computador (ADB)
@@ -420,7 +420,7 @@ Detalhes em [docs/SEGURANCA.md](docs/SEGURANCA.md).
 ## Estrutura do repositório
 
 ```text
-apps/tv-casa      launcher TvRetro 0.9 (apps.txt, assets/, build.sh)
+apps/tv-casa      launcher TvRetro 0.9.1 (apps.txt, assets/, build.sh)
 apps/phone-pad    controle Bluetooth HID 0.4 (experimental)
 tools/tray        TvRetro Controle (bandeja do notebook Linux)
 tools/debloat     limpeza guiada e reversível (script e listas de pacotes)
@@ -434,6 +434,7 @@ Rodar os testes (precisa de JDK 17 com `javac`):
 ```bash
 python3 tests/test_transfer.py
 python3 tests/test_catalog.py
+python3 tests/test_transfer_status.py
 python3 tests/test_tray_install.py
 python3 tests/test_debloat.py     # não precisa de JDK nem de TV
 ```

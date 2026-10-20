@@ -37,3 +37,10 @@ Trocar entre dois jogos, sair e voltar pelo Home, reconectar Phone Pad após out
 
 - Testes automatizados com `adb` simulado (`python3 tests/test_debloat.py`, 12 cenários): simulação sem alterar nada, protegidos e apps do usuário intocados, só o confirmado é desativado, desfazer pelo registro e pela lista da TV, telas iniciais condicionadas ao TvRetro, apps persistentes preservados e reativação automática quando a Home deixa de abrir o TvRetro.
 - **Não validado em TV real.** O comportamento de `pm disable-user`, `cmd package` e dos nomes de pacote varia entre fabricantes e versões do Android. Tratar a primeira execução em cada modelo como experimental.
+
+## 0.9.1 — receptor e debloat
+
+- `test_transfer.py`: cenários HTTP anteriores e novos POSTs de 8 MiB rejeitados com 409, 413 e 507; linhas de status 200/403/409; erro interno 500 sem caminho ou detalhe da exceção no corpo; atividade a cada segundo mantém a sessão e 2 segundos sem atividade fecham o socket no Harness. O caso 409 reproduziu BrokenPipeError antes da correção.
+- `test_transfer_status.py`: 12 cenários JVM de statusFor, incluindo timeout, interrupção, argumentos inválidos, falta de espaço direta/causal e falhas internas. Receptor e testes compilados com JDK 17, source/target 1.8; isso não valida APIs Android.
+- `test_catalog.py`: matcher passou. `test_tray_install.py`: 2 testes passaram. `test_debloat.py`: 12 testes com ADB simulado passaram, sem executar debloat na TV.
+- Não testados: compilação/instalação do APK, interface e callbacks no Android real, sessão real de 10/60 minutos, upload real na TV, debloat em TV real. O timeout curto testa o rastreamento de atividade pelo Harness; o agendamento Android foi revisado apenas em código.
