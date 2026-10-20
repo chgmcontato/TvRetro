@@ -1,4 +1,8 @@
-# Validação da entrega 0.8
+# Histórico de validação
+
+Este documento é cronológico. As pendências de cada etapa descrevem o que ainda não havia sido testado naquele momento. O resultado mais recente está na seção final, de validação em aparelho; não interpretar uma validação parcial como cobertura completa.
+
+## Entrega 0.8
 
 - Compilação JDK 17 + Android 35: versão pessoal e árvore fonte sem assets particulares, ambas concluídas.
 - Assinatura da versão pessoal compatível com a instalação anterior; instalação por atualização concluída na TCL Android TV 11. Dados e jogos preservados.
@@ -36,9 +40,9 @@ Trocar entre dois jogos, sair e voltar pelo Home, reconectar Phone Pad após out
 ## Debloat guiado (tools/debloat)
 
 - Testes automatizados com `adb` simulado (`python3 tests/test_debloat.py`, 12 cenários): simulação sem alterar nada, protegidos e apps do usuário intocados, só o confirmado é desativado, desfazer pelo registro e pela lista da TV, telas iniciais condicionadas ao TvRetro, apps persistentes preservados e reativação automática quando a Home deixa de abrir o TvRetro.
-- **Não validado em TV real.** O comportamento de `pm disable-user`, `cmd package` e dos nomes de pacote varia entre fabricantes e versões do Android. Tratar a primeira execução em cada modelo como experimental.
+- **Na etapa inicial, não validado em TV real.** A execução posterior limitada está registrada na seção final. O comportamento de `pm disable-user`, `cmd package` e dos nomes de pacote varia entre fabricantes e versões do Android. Tratar a primeira execução em cada modelo como experimental.
 
-## 0.9.1 — receptor e debloat
+## 0.9.1 — etapa automatizada do receptor e debloat
 
 - `test_transfer.py`: cenários HTTP anteriores e novos POSTs de 8 MiB rejeitados com 409, 413 e 507; linhas de status 200/403/409; erro interno 500 sem caminho ou detalhe da exceção no corpo; atividade a cada segundo mantém a sessão e 2 segundos sem atividade fecham o socket no Harness. O caso 409 reproduziu BrokenPipeError antes da correção.
 - `test_transfer_status.py`: 12 cenários JVM de statusFor, incluindo timeout, interrupção, argumentos inválidos, falta de espaço direta/causal e falhas internas. Receptor e testes compilados com JDK 17, source/target 1.8; isso não valida APIs Android.
@@ -52,3 +56,30 @@ Trocar entre dois jogos, sair e voltar pelo Home, reconectar Phone Pad após out
 - Todos os testes anteriores passaram novamente: receptor HTTP, catálogo, instalador de bandeja (2) e debloat simulado (12). Classes Java do launcher compiladas com JDK 17, source/target 1.8, android.jar 35 e stubs de lambdas. Nenhum APK foi gerado ou assinado.
 - `test_transfer_stress.py` passou: 500 GETs, 80 uploads de 64 KiB com integridade, upload sintético de 64 MiB por streaming/SHA-256 com heap de 64 MiB, concorrência e recuperação da trava, 30 interrupções sem arquivo parcial/final, nomes inválidos, recuperação após 3,3 s de descarte, 80 entradas malformadas e saturação com 20 conexões. Arquivos são temporários; não acessa a TV nem usa ROMs. Métricas de /proc, quando disponíveis, são do JVM local, não da TV; aquecimento não permite concluir ausência de vazamentos.
 - Não testados: APK completo/dex/assinatura, execução em TV/emulador (incluindo API 21), layouts/ciclo de vida Android, Bluetooth, jogos/RetroArch reais, fonte de capas real, sessões reais de 10/60 minutos, memória prolongada e debloat em TV real. O suporte mínimo continua exigindo validação em aparelho antigo.
+
+## Validação em aparelho — 2026-10-20
+
+### Compilação e atualização
+
+- APK 0.9.1, código 15: compilação completa com JDK 17/SDK 35, geração de DEX, alinhamento e assinatura concluídos. O certificado SHA-256 foi comparado ao do APK instalado e era idêntico. Atualização com `adb install -r`, sem desinstalar; fonte e wallpaper pessoais preservados no build privado. Esses assets, chaves e APKs não fazem parte da distribuição fonte.
+- TvRetro continuou como Home padrão. As abas Aplicativos, Jogos e Monitorar abriram; capas online, indicador de conexão/taxas e métricas locais ficaram visíveis. Foram feitas 24 trocas de abas em duas etapas, sem crash do launcher encontrado no buffer consultado. Isso não certifica ausência de falhas.
+
+### Receptor na TV
+
+- Página de envio: 200; token inválido: 403; três nomes com múltiplas quebras de linha: 400; linha de cabeçalho excessiva: 400; tentativa de envio abaixo da reserva de espaço: 507. Ao sair da tela, o receptor deixou de responder. Nenhum `.part` foi encontrado na biblioteca.
+- O espaço disponível estava abaixo dos 550 MiB reservados. Portanto, **não houve envio completo bem-sucedido de um novo jogo na TV** nessa sessão. Os testes locais de envio/integridade e de carga continuam válidos dentro de seu próprio escopo, sem substituir essa pendência em aparelho.
+
+### Jogos, controles e Play Store
+
+- Um jogo SNES e um PSX iniciaram no RetroArch, com introduções observadas. Home retornou ao TvRetro. O emulador aberto para teste foi encerrado ao final; não houve teste prolongado de jogabilidade, saves ou compatibilidade de outros títulos.
+- O usuário confirmou funcionamento dos controles físico e do S24 FE. A reconexão Bluetooth durante um jogo não foi repetida nesta sessão.
+- A Play Store abriu inicialmente com mensagem genérica sobre Wi-Fi. O Android reportava conexão validada e os registros da loja indicavam `AuthFailureError`, exigindo novo login. Play Services e Google Services Framework estavam habilitados. Após o usuário concluir a autenticação diretamente na TV, a loja exibiu catálogo, recomendações e imagens, sem restaurar os apps removidos. A causa observada era autenticação; isso não permite atribuir toda mensagem semelhante a login. Instalação/compra de apps pela loja não foi testada.
+
+### Memória, debloat e limites
+
+- Durante o uso aquecido, o PSS reportado do launcher oscilou aproximadamente entre 63 e 72 MiB. A medição anterior, em outra condição de atividade/paginação, não serve como comparação direta de economia. Não foi demonstrado vazamento, mas a execução curta também não prova sua ausência.
+- O script de debloat desativou somente `com.android.htmlviewer`, com confirmação e registro. O total de pacotes desativados passou de 23 para 24; a Home permaneceu TvRetro. Animações e protetor já estavam desligados. Reinício e desfazer não foram exercitados.
+- Uma remoção personalizada posterior de seis componentes opcionais já desativados foi realizada fora do script, apenas para o usuário da TV. Não é parte do fluxo de debloat distribuído, não amplia sua lista de candidatos e não representa teste de desinstalação pelo script. Não houve ganho significativo de armazenamento, pois APKs do firmware permaneceram.
+- **Ainda pendentes:** Android 5.x/API 21 real; sessões reais de 10/60 minutos; upload completo na TV; memória e jogabilidade prolongadas; reconexão Bluetooth durante jogo; reinício/restauração após debloat; demais candidatos/launchers/ajustes do script em aparelho. Não há certificação para outras TVs ou auditoria completa de firmware.
+
+Os registros brutos, capturas e builds pessoais permanecem fora do Git. Não publicar dados de rede, conta, serial, tokens, chaves, ROMs, BIOS ou assets particulares ao compartilhar evidências.

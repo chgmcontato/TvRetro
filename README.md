@@ -2,7 +2,7 @@
 
 O TvRetro é uma tela inicial (launcher) leve para Android TV. Ela mostra seus aplicativos do dia a dia (Netflix, YouTube etc.), uma biblioteca de jogos de SNES e PlayStation com capas baixadas automaticamente, um monitor de memória e rede, e uma tela para enviar jogos do celular ou do computador para a TV. Se a sua TV ainda está de fábrica, o projeto também traz uma **limpeza guiada e reversível** dos apps que você não usa.
 
-É um projeto pessoal, feito aos poucos com ajuda de IA e testado em uma **TCL Android TV 11**. Em outras TVs pode funcionar ou não: leia a seção [Validação e limites](#validação-e-limites).
+É um projeto pessoal **experimental/beta**, feito aos poucos com ajuda de IA e testado em uma **TCL Android TV 11**. Em outras TVs pode funcionar ou não: leia a seção [Validação e limites](#validação-e-limites).
 
 > **Aviso legal.** Este repositório **não contém nem indica ROMs ou BIOS**. Use apenas jogos que você tem direito de usar (por exemplo, backups de cartuchos e discos que você possui). Você é responsável pelo que instala na sua TV.
 
@@ -377,6 +377,7 @@ adb push "Meu Jogo.chd" /storage/emulated/0/Games/PSX/
 | `INSTALL_FAILED_UPDATE_INCOMPATIBLE` | O APK foi assinado com outra chave. Desinstale (`adb uninstall com.carlos.tvcasa`) e instale de novo. |
 | O script diz "Android SDK not found" | Defina `ANDROID_HOME` e instale `platforms;android-35` e `build-tools;35.0.0`. |
 | "Defina KEYSTORE" | Rode os `export` do passo 6 na mesma janela do terminal. |
+| Play Store mostra “Algo deu errado” e pede para verificar o Wi-Fi | Confira a conexão. Na TCL testada, a rede estava validada, mas os registros indicavam falha de autenticação (`AuthFailureError`); confirmar novamente o login da conta Google na própria TV fez o catálogo carregar. A mensagem também pode ter outras causas. Não envie senha ou código de verificação no chat e não remova componentes Google como tentativa de correção. |
 | O jogo não abre | Confira se o RetroArch 32 bits está instalado, se foi aberto uma vez e se o núcleo SNES/PSX foi baixado. |
 | Não aparecem jogos | Verifique a pasta (`Games/SNES`, `Games/PSX`), a extensão e toque em **Atualizar biblioteca**. Em pendrive, confira o formato (FAT32). |
 | Envio recusado por espaço | A TV reserva 550 MiB livres. Libere espaço ou use pendrive. |
@@ -406,14 +407,15 @@ Detalhes em [docs/SEGURANCA.md](docs/SEGURANCA.md).
 
 ## Validação e limites
 
-- A versão 0.7 foi usada na TV alvo. Nas versões 0.8, 0.8.1 e 0.9: compilação local, testes HTTP automatizados do receptor e validações no aparelho registradas em [docs/VALIDACAO.md](docs/VALIDACAO.md).
+- A versão **0.9.1 (código 15)** foi compilada, assinada com o mesmo certificado e instalada por atualização na TCL Android TV 11. Foram conferidos home/abas, capas online, abertura de um jogo SNES e um PSX, retorno pelo Home e rejeições HTTP do receptor. O usuário confirmou os controles físico e Bluetooth do celular. Histórico e limites em [docs/VALIDACAO.md](docs/VALIDACAO.md).
 - Não existe auditoria completa do firmware nem garantia de desempenho em outros modelos.
 - PlayStation com BIOS emulada foi testado com **um** jogo; isso não equivale a compatibilidade completa.
 - Os caminhos dos núcleos são os do **RetroArch ARM32**; não há suporte universal a outros emuladores.
 - O launcher usa `targetSdk 28` (dívida técnica documentada): migrar exige rever permissões e acesso aos jogos.
 - A lista de jogos ainda não recicla views para bibliotecas enormes.
 - Windows e macOS não foram validados pelo autor.
-- O script de limpeza foi testado com `adb` simulado, não em TV real. Os nomes de pacote variam entre fabricantes e versões; a lista é curta de propósito.
+- O script de limpeza passou nos testes com `adb` simulado e teve **execução real limitada a desativar um pacote** (`com.android.htmlviewer`). Reinício, restauração e demais candidatos não foram validados nessa execução; isso não certifica segurança geral do debloat. Os nomes de pacote variam por fabricante.
+- Continuam pendentes: teste prolongado de memória/jogabilidade, Android 5.x real, sessões reais de 10/60 minutos, reinício após debloat e envio completo de um jogo na TV. O teste de envio bem-sucedido na TV foi bloqueado por espaço abaixo da reserva de 550 MiB; a resposta 507 foi confirmada. Testes locais de carga passaram, mas não substituem essas verificações.
 
 ---
 
