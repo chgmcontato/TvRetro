@@ -23,6 +23,8 @@ try:
  assert req('GET',base+'/check?console=SNES&name=demo.sfc&size=8')[0]==409
  assert req('POST',base+'/upload?console=SNES&name=demo.sfc',b'OVERWRITE')[0]==409
  assert (root/'SNES/demo.sfc').read_bytes()==b'TEST-ROM'
+ status,body=req('POST',base+'/upload?console=SNES&name=demo.sfc',b'x'*(8*1024*1024));assert status==409 and b'nada foi' in body
+ assert req('POST',base+'/upload?console=SNES&name=large.sfc',b'x'*(8*1024*1024),{'Content-Length':str(2**31+1)})[0]==413
  assert req('POST',base+'/upload?console=SNES&name=..%2Fescape.sfc',b'bad')[0]==400
  assert req('POST',base+'/upload?console=SNES&name=game.zip',b'bad')[0]==400
  assert req('POST',base+'/upload?console=PSX&name=demo.chd',b'CHD-TEST')[0]==200
@@ -42,6 +44,7 @@ p=subprocess.Popen([str(java),'-cp',str(classes),'Harness',str(root),str(2**62)]
 port,token=p.stdout.readline().split();port=int(port);base='/'+token
 try:
  assert req('POST',base+'/upload?console=SNES&name=space.sfc',b'ROM')[0]==507
+ assert req('POST',base+'/upload?console=SNES&name=space.sfc',b'x'*(8*1024*1024))[0]==507
  assert not (root/'SNES/space.sfc').exists();print('Reserva de espaço verificada.')
 finally:
  p.stdin.write('\n');p.stdin.flush();p.wait(timeout=10)
