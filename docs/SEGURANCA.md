@@ -21,3 +21,6 @@ Referências: [Android: memória](https://developer.android.com/topic/performanc
 
 ## Controle de bandeja
 O aplicativo GTK não abre portas HTTP nem captura vídeo/áudio. Usa ADB já autorizado sob demanda e comandos fixos por argumentos, sem shell local e sem interpolar comandos do usuário. IPv4/portas são validados; configuração fica no usuário com modo0600. O ícone ocioso não consulta a TV. ADB continua necessário: o novo controle não elimina a exposição da depuração de rede. Bibliotecas/typelib de terceiros não são versionados.
+
+## Capas0.9
+HTTPS somente para thumbnails.libretro.com, sem redirecionamento/ROM upload; catálogo/arquivos/dimensões limitados e worker único. Não há cache de imagens em disco. Nomes ambíguos não geram associação automática arbitrária. Veja docs/CAPAS-E-REDE.md.

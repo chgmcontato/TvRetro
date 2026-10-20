@@ -109,9 +109,9 @@ public class MainActivity extends Activity {
         final java.util.List<File> directories=gameDirectories();
         libraryWorker.execute(()->{ArrayList<File> found=new ArrayList<>();for(File dir:directories){File[] entries=dir.listFiles();if(entries!=null)for(File f:entries){String n=f.getName().toLowerCase(java.util.Locale.ROOT);if(f.isFile()&&n.matches(".*\\.(sfc|smc|cue|chd|pbp|m3u)$"))found.add(f);}}java.util.Collections.sort(found,(a,b)->a.getName().compareToIgnoreCase(b.getName()));runOnUiThread(()->{if(destroyed||generation!=libraryGeneration)return;libraryLoading=false;libraryReady=true;libraryFiles=found;if(gamesPage)buildTiles();});});
     }
-    private void releaseImages(){covers.evictAll();for(View tile:tiles)if(tile instanceof ViewGroup){View child=((ViewGroup)tile).getChildAt(0);if(child instanceof GameCoverView)((GameCoverView)child).release();}}
+    private void releaseImages(){RemoteCovers.clearMemory();for(View tile:tiles)if(tile instanceof ViewGroup){View child=((ViewGroup)tile).getChildAt(0);if(child instanceof GameCoverView)((GameCoverView)child).release();}}
 
-    private final android.util.LruCache<String,Bitmap> covers=new android.util.LruCache<String,Bitmap>(2*1024*1024){protected int sizeOf(String key,Bitmap value){return value.getByteCount();}};
+
     private boolean gamesPage=false,monitorPage=false; private TextView appsTab,gamesTab,monitorTab; private View gamesShelf; private MonitorPanel monitorPanel;
     private boolean dirty = true;
     private java.util.Locale shownLocale; // the TV's language (and region) when the page was built
@@ -127,18 +127,7 @@ public class MainActivity extends Activity {
 
     private final BroadcastReceiver mediaChanged=new BroadcastReceiver(){@Override public void onReceive(Context c,Intent i){dirty=true;libraryReady=false;if(gamesPage&&root!=null&&hasWindowFocus())scanGames();if(monitorPanel!=null)monitorPanel.permissionsChanged();}};
 
-    // The network tile follows the connection live: Wi-Fi bars, Ethernet or Offline. Only its icon and
-    // label change, so nothing is rebuilt.
-    private ImageView netIcon;
-    private int netState = -1;
-    private final ConnectivityManager.NetworkCallback networkChanged = new ConnectivityManager.NetworkCallback() {
-        @Override public void onAvailable(Network n) { runOnUiThread(MainActivity.this::refreshNetwork); }
-        @Override public void onLost(Network n) { runOnUiThread(MainActivity.this::refreshNetwork); }
-        // Also fires when the Wi-Fi signal gets stronger or weaker.
-        @Override public void onCapabilitiesChanged(Network n, NetworkCapabilities c) {
-            runOnUiThread(MainActivity.this::refreshNetwork);
-        }
-    };
+    private NetworkBadge networkBadge;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -182,7 +171,7 @@ public class MainActivity extends Activity {
         root.addView(gamesTab,at(px(MARGIN+280),px(350),px(250),px(64)));
         root.addView(monitorTab,at(px(MARGIN+560),px(350),px(250),px(64)));
         updateTabs();
-        setContentView(scroller);
+        networkBadge=NetworkBadge.install(this,scroller,px(ICON_TOP),px(MARGIN),scale);
 
         IntentFilter f = new IntentFilter();
         f.addAction(Intent.ACTION_PACKAGE_ADDED);
@@ -193,22 +182,17 @@ public class MainActivity extends Activity {
         else registerReceiver(packagesChanged, f);
 
         IntentFilter media=new IntentFilter();media.addAction(Intent.ACTION_MEDIA_MOUNTED);media.addAction(Intent.ACTION_MEDIA_EJECT);media.addAction(Intent.ACTION_MEDIA_REMOVED);media.addAction(Intent.ACTION_MEDIA_UNMOUNTED);media.addDataScheme("file");if(android.os.Build.VERSION.SDK_INT>=33)registerReceiver(mediaChanged,media,Context.RECEIVER_EXPORTED);else registerReceiver(mediaChanged,media);
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm != null) try {
-            if (android.os.Build.VERSION.SDK_INT >= 24) cm.registerDefaultNetworkCallback(networkChanged);
-            else cm.registerNetworkCallback(new NetworkRequest.Builder().build(), networkChanged);
-        } catch (Exception ignored) {}
+
     }
 
-    @Override protected void onPause(){if(monitorPanel!=null)monitorPanel.stop();releaseImages();super.onPause();}
+    @Override protected void onPause(){if(monitorPanel!=null)monitorPanel.stop();if(networkBadge!=null)networkBadge.stop();releaseImages();super.onPause();}
 
     @Override
     protected void onDestroy() {
         destroyed=true;libraryWorker.shutdownNow();
         unregisterReceiver(packagesChanged);
         unregisterReceiver(mediaChanged);
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm != null) try { cm.unregisterNetworkCallback(networkChanged); } catch (Exception ignored) {}
+        if(networkBadge!=null)networkBadge.stop();
         super.onDestroy();
     }
 
@@ -271,6 +255,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        if(networkBadge!=null)networkBadge.start();
         if(gamesPage)scanGames();
         if(monitorPage&&monitorPanel!=null){monitorPanel.start();monitorPanel.permissionsChanged();}
         // Rebuild only when apps were installed, removed or updated.
@@ -390,14 +375,12 @@ public class MainActivity extends Activity {
         int ib = px(ICON_BUTTON), ig = px(ICON_GAP);
         // The last icon's right edge lines up with the apps' (its focus circle sticks out past them).
         int qx = getResources().getDisplayMetrics().widthPixels - m + (ib - px(ICON_SIZE)) / 2
-                - (quick.size() + 1) * ib - quick.size() * ig;
+                - quick.size() * ib - quick.size() * ig - px(580);
         for (int q : quick) {
             addIcon(QUICK + QUICK_NAMES[q], Strings.t(QUICK_LABELS[q]), new LineIcon(QUICK_ICONS[q]), qx);
             qx += ib + ig;
         }
-        netIcon = addIcon(NETWORK, Strings.t("Network"), null, qx);
-        netState = -1;
-        refreshNetwork();
+
 
         root.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
         View restore = null;
@@ -418,16 +401,11 @@ public class MainActivity extends Activity {
         java.util.List<File> files=libraryFiles;
         android.widget.HorizontalScrollView shelf=new android.widget.HorizontalScrollView(this);shelf.setHorizontalScrollBarEnabled(false);shelf.setClipChildren(false);shelf.setClipToPadding(false);shelf.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);shelf.setFocusable(false);FrameLayout track=new FrameLayout(this);track.setClipChildren(false);
         int x=px(30),height=px(330);
-        for(File f:files){String label=f.getName().replaceFirst("(?i)\\.(sfc|smc|cue|chd|pbp|m3u)$","");String id=gameCoverId(f.getName());int width=px(id==null?240:id.equals("castlevania")?330:510);addTile(track,"game:"+f.getAbsolutePath(),label,id==null?null:new ColorDrawable(0xFF161820),LineIcon.PLAY,null,x,px(40),width,height);if(id!=null){ViewGroup card=(ViewGroup)tiles.get(tiles.size()-1);card.removeViewAt(0);card.addView(new GameCoverView(this,id),0,new FrameLayout.LayoutParams(-1,-1));}x+=width+px(30);}
+        for(File f:files){String label=f.getName().replaceFirst("(?i)\\.(sfc|smc|cue|chd|pbp|m3u)$","");int width=px(RemoteCovers.system(f).equals(ThumbnailCatalog.SNES)?510:330);addTile(track,"game:"+f.getAbsolutePath(),label,new ColorDrawable(0xFF161820),LineIcon.PLAY,null,x,px(40),width,height);ViewGroup card=(ViewGroup)tiles.get(tiles.size()-1);card.removeViewAt(0);card.addView(new GameCoverView(this,f),0,new FrameLayout.LayoutParams(-1,-1));x+=width+px(30);}
         shelf.addView(track,new FrameLayout.LayoutParams(Math.max(x,getResources().getDisplayMetrics().widthPixels-2*margin),px(420)));gamesShelf=shelf;root.addView(shelf,at(margin,px(460),getResources().getDisplayMetrics().widthPixels-2*margin,px(420)));
         if(files.isEmpty()){TextView empty=text(px(26),Color.WHITE,regular);empty.setText(libraryLoading?"Buscando jogos…":"Nenhum jogo encontrado. Use Enviar jogos ou USB com Games/SNES e Games/PSX.");track.addView(empty,at(px(30),px(90),px(1500),px(150)));}
         int gap=px(GAP),width=(getResources().getDisplayMetrics().widthPixels-2*margin-2*gap)/3,y=px(920),h=px(110);addTile(root,"games:transfer","Enviar jogos",null,LineIcon.PLUS,null,margin,y,width,h);addTile(root,"com.retroarch.ra32","Abrir RetroArch",null,LineIcon.PLAY,null,margin+width+gap,y,width,h);addTile(root,"games:refresh","Atualizar biblioteca",null,LineIcon.PLUS,null,margin+2*(width+gap),y,width,h);
     }
-    private String gameCoverId(String filename){String n=filename.toLowerCase(java.util.Locale.ROOT),id=null;
-        if(n.startsWith("castlevania"))id="castlevania";else if(n.startsWith("chrono trigger"))id="chrono";else if(n.startsWith("donkey kong country"))id="donkey";else if(n.startsWith("super bomberman 2"))id="bomberman2";else if(n.startsWith("super bomberman 5"))id="bomberman5";else if(n.startsWith("super mario kart"))id="kart";else if(n.startsWith("super mario world"))id="world";else if(n.startsWith("top gear"))id="topgear";else if(n.startsWith("ultimate mortal kombat 3"))id="mk3";
-        if(id!=null)try(java.io.InputStream in=getAssets().open("covers/"+id+".png")){}catch(java.io.IOException e){return null;}return id;
-    }
-    private Drawable fitCover(Drawable d,int w,int h){Bitmap b=Bitmap.createBitmap(w,h,Bitmap.Config.RGB_565);Canvas c=new Canvas(b);c.drawColor(0xFF161820);float ratio=Math.min(w/(float)Math.max(1,d.getIntrinsicWidth()),h/(float)Math.max(1,d.getIntrinsicHeight()));int width=Math.round(d.getIntrinsicWidth()*ratio),height=Math.round(d.getIntrinsicHeight()*ratio);d.setBounds((w-width)/2,(h-height)/2,(w+width)/2,(h+height)/2);d.draw(c);return new BitmapDrawable(getResources(),b);}
     private void launchGame(String path){long now=android.os.SystemClock.elapsedRealtime();if(now-lastGameLaunch<1500)return;lastGameLaunch=now;if(!new File(path).isFile()){new android.app.AlertDialog.Builder(this).setMessage("Arquivo do jogo não encontrado. Atualize a biblioteca.").setPositiveButton("OK",null).show();return;}Intent i=new Intent(this,GameLaunchActivity.class);i.putExtra("ROM",path);boolean snes=path.toLowerCase(java.util.Locale.ROOT).matches(".*\\.(sfc|smc)$");i.putExtra("LIBRETRO","/data/user/0/com.retroarch.ra32/cores/"+(snes?"snes9x_libretro_android.so":"pcsx_rearmed_libretro_android.so"));i.putExtra("CONFIGFILE","/storage/emulated/0/Android/data/com.retroarch.ra32/files/retroarch.cfg");try{startActivity(i);}catch(Exception e){new android.app.AlertDialog.Builder(this).setTitle("Não foi possível abrir o jogo").setMessage("Confira se o RetroArch está instalado e se o núcleo do console foi configurado.").setPositiveButton("OK",null).show();}}
 
     private void addTile(ViewGroup parent, final String key, String label, Drawable banner, int[] lineIcon, Drawable appIcon,
@@ -627,49 +605,7 @@ public class MainActivity extends Activity {
     }
 
     // OFFLINE, 1 to 3 for Wi-Fi with that many bars, or ETHERNET (any other link, which on a TV is a cable).
-    private int networkState() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm == null) return OFFLINE;
-        try {
-            int rssi = Integer.MIN_VALUE;
-            if (android.os.Build.VERSION.SDK_INT >= 23) {
-                NetworkCapabilities c = cm.getNetworkCapabilities(cm.getActiveNetwork());
-                if (c == null) return OFFLINE;
-                if (!c.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) return ETHERNET;
-                if (android.os.Build.VERSION.SDK_INT >= 29) rssi = c.getSignalStrength();
-            } else {
-                android.net.NetworkInfo ni = cm.getActiveNetworkInfo();
-                if (ni == null || !ni.isConnected()) return OFFLINE;
-                if (ni.getType() != ConnectivityManager.TYPE_WIFI) return ETHERNET;
-            }
-            if (rssi == Integer.MIN_VALUE) { // Android 9 and older: ask the Wi-Fi service
-                WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                if (wm != null && wm.getConnectionInfo() != null) rssi = wm.getConnectionInfo().getRssi();
-            }
-            return 1 + WifiManager.calculateSignalLevel(rssi, 3);
-        } catch (Exception e) {
-            return OFFLINE;
-        }
-    }
-
-    private void refreshNetwork() {
-        if (netIcon == null) return;
-        int state = networkState();
-        if (state == netState) return;
-        netState = state;
-        if (state == ETHERNET) {
-            netIcon.setImageDrawable(new LineIcon(LineIcon.ETHERNET));
-        } else {
-            // The whole Wi-Fi fan dim, with the bars it has bright on top. Offline is a slash instead.
-            LineIcon fan = new LineIcon(LineIcon.WIFI);
-            fan.setAlpha(0x47);
-            int[] top = state == OFFLINE ? LineIcon.SLASH : state == 1 ? LineIcon.WIFI_1
-                    : state == 2 ? LineIcon.WIFI_2 : LineIcon.WIFI;
-            netIcon.setImageDrawable(new LayerDrawable(new Drawable[] {fan, new LineIcon(top)}));
-        }
-        ((View) netIcon.getParent()).setContentDescription(
-                state == OFFLINE ? Strings.t("Offline") : state == ETHERNET ? "Ethernet" : "Wi-Fi");
-    }
+    private void refreshNetwork(){if(networkBadge!=null)networkBadge.refresh();}
 
     // Wi-Fi settings (on Android TV that page lists Ethernet too), else the TV's network page, else Settings.
     private void openNetworkSettings() {

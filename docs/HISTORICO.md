@@ -26,3 +26,5 @@ Este documento resume a conversa autorizada para registro do projeto. Informaç�
 - Alexa: integração ainda não implementada; não prometer controle de voz só por instalar o launcher.
 
 15. Nome da home alterado de TV Casa para **TvRetro**, versão 0.8.1, mantendo pacote/assinatura e configurações. Controle do notebook convertido em **TvRetro Controle** nativo de bandeja, sem espelhamento, sem consultas periódicas e com inicialização automática opcional.
+
+16. Versão0.9: indicador fixo de conexão/taxas em todas as telas do TvRetro, retirada das nove capas incorporadas e busca online genérica pelo catálogo Libretro. romsgames.net retornou403. Imagens somente em RAM; fallback por nome mantém o jogo acessível sem internet. Jogos continuam internos; uso futuro de pendrive documentado, sem migração.

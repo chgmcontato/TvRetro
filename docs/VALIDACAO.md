@@ -22,3 +22,13 @@ Trocar entre dois jogos, sair e voltar pelo Home, reconectar Phone Pad após out
 - Instalado somente no usuário. Bibliotecas GTK/Ayatana já existiam; typelib ausente obtido de pacote oficial Ubuntu, sem instalar novos pacotes de sistema. Configuração privada fora do Git; atalho de inicialização contém somente caminho local, sem IP.
 - Fechar mantém a aplicação por desenho de ciclo de vida; Sair encerra. Não há timer de polling, servidor HTTP ou execução de scrcpy no novo aplicativo.
 - Testes do receptor JVM continuaram passando após a mudança de nome. Nenhum jogo/save foi movido ou apagado nesta entrega.
+
+## Entrega 0.9 — capas online e cabeçalho
+
+- Fonte pessoal e fonte sanitizada sem assets particulares compiladas. APK sem pasta de capas: aproximadamente457KiB, contra cerca de3,1MiB na0.8.1. Mesma assinatura, pacote e home padrão.
+- Cabeçalho verificado visualmente em Aplicativos, Jogos, Monitorar e Enviar jogos. Exibe conexão e taxas da TV inteira em KiB/s; aparece também por implementação na breve ponte de abertura de jogo, sem sobrepor o RetroArch.
+- Capas de Castlevania, Chrono Trigger, Donkey Kong Country e Bomberman2 apareceram na TCL pela internet, sem PNGs incorporados. Demais títulos foram resolvidos contra o catálogo real; carregamento de imagens ocorre sob demanda. O primeiro protótipo buscava todo o índice; o final tenta primeiro a URL do título/região para reduzir tráfego e alocações.
+- Matcher JVM determinístico: regiões/tags/Gold Cartridge, título ambíguo, ausente, URL encoding e rejeição de caminhos; testes em tests/test_catalog.py. Receptor HTTP mantém os testes anteriores passando. Lookup adicional de Crash Bandicoot e Tekken3 confirmou que a busca não depende dos nove jogos da instalação alvo.
+- Fallback sem imagem é parte da implementação; Wi-Fi da TV não foi desativado para simular indisponibilidade. Não se afirma teste completo de todas as falhas de rede ou catálogo.
+- Nove ROMs e saves mantidos no armazenamento interno; thumbnails públicos já vazios. Sem formatação ou migração de USB. No teste após retirar as imagens do APK, aproximadamente539MiB livres.
+- Não foi feito teste longo de emulação/desempenho. Catálogo online e correspondência por nome podem mudar ou não incluir um título; isso não impede abrir a ROM.

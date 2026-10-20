@@ -1,1 +1,1 @@
-Assets opcionais e privados: fonts/Courier_New.ttf, fonts/Courier_New_Bold.ttf, backgrounds/home.jpg e covers/*.png. Sem esses arquivos, a home usa fonte monoespaçada e fundo sólido. Nenhuma ROM é distribuída.
+Fontes e wallpaper pessoais são opcionais: fonts/Courier_New.ttf, fonts/Courier_New_Bold.ttf e backgrounds/home.jpg. Sem eles, a home usa fonte monoespaçada e fundo sólido. Capas vêm do catálogo Libretro pela internet; não adicionar PNGs ao APK. cover-hints.properties é opcional/particular e ignorado pelo Git. Nenhuma ROM é distribuída.

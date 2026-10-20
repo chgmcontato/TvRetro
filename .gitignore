@@ -23,3 +23,5 @@ apps/tv-casa/assets/covers/
 
 **/typelib/
 *.deb
+
+apps/tv-casa/assets/cover-hints.properties
