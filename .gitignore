@@ -20,3 +20,6 @@ apps/tv-casa/assets/covers/
 *.m3u
 *.srm
 *.state
+
+**/typelib/
+*.deb

@@ -13,3 +13,12 @@
 ## Regressões a repetir após mudanças futuras
 
 Trocar entre dois jogos, sair e voltar pelo Home, reconectar Phone Pad após outro app no celular, retornar do menu de permissões, conectar/desconectar USB com biblioteca aberta e encerrar transferência no meio de um arquivo. Alguns desses cenários foram validados em versões anteriores; isso não substitui testar novamente após alterar sua implementação.
+
+## Entrega 0.8.1 e controle de bandeja
+
+- Nome instalado da home: TvRetro; pacote preservado, versionCode13. Atualização com mesma assinatura, sem desinstalar nem mudar a home padrão.
+- Python do aplicativo/instalador compilado sem erro; arquivos desktop validados. Indicador registrado pelo StatusNotifierWatcher do Zorin; ações da aplicação publicadas na sessão e instância única verificada pela ativação do aplicativo existente.
+- Comando Home enviado pela ação real do app; estado retornou “Conectado à TV • pronto para usar”. Não se afirma teste manual de todos os botões.
+- Instalado somente no usuário. Bibliotecas GTK/Ayatana já existiam; typelib ausente obtido de pacote oficial Ubuntu, sem instalar novos pacotes de sistema. Configuração privada fora do Git; atalho de inicialização contém somente caminho local, sem IP.
+- Fechar mantém a aplicação por desenho de ciclo de vida; Sair encerra. Não há timer de polling, servidor HTTP ou execução de scrcpy no novo aplicativo.
+- Testes do receptor JVM continuaram passando após a mudança de nome. Nenhum jogo/save foi movido ou apagado nesta entrega.

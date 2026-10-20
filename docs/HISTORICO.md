@@ -24,3 +24,5 @@ Este documento resume a conversa autorizada para registro do projeto. Informaç�
 - Verificar atualização oficial da TCL; nunca usar firmware de outro modelo.
 - Google Cast estava desativado. Decidir reativação após avaliar custo de memória e navegador do notebook. HDMI é a opção direta para tela inteira no Linux.
 - Alexa: integração ainda não implementada; não prometer controle de voz só por instalar o launcher.
+
+15. Nome da home alterado de TV Casa para **TvRetro**, versão 0.8.1, mantendo pacote/assinatura e configurações. Controle do notebook convertido em **TvRetro Controle** nativo de bandeja, sem espelhamento, sem consultas periódicas e com inicialização automática opcional.

@@ -18,3 +18,6 @@ A auditoria local foi de leitura e não certifica ausência de todas as falhas. 
 A lista ainda mantém views simples para todos os arquivos, embora somente capas visíveis sejam decodificadas: para bibliotecas enormes, virtualizar também as views. Métricas de armazenamento do monitor ainda são consultadas a cada 2 s; reduzir frequência e retirar I/O da interface em uma próxima versão. O retry do RetroArch precisa de regressão antes de qualquer mudança. Testes longos de memória e novos jogos ainda são necessários.
 
 Referências: [Android: memória](https://developer.android.com/topic/performance/memory-overview), [ADB](https://developer.android.com/tools/adb), [scrcpy oficial](https://github.com/Genymobile/scrcpy).
+
+## Controle de bandeja
+O aplicativo GTK não abre portas HTTP nem captura vídeo/áudio. Usa ADB já autorizado sob demanda e comandos fixos por argumentos, sem shell local e sem interpolar comandos do usuário. IPv4/portas são validados; configuração fica no usuário com modo0600. O ícone ocioso não consulta a TV. ADB continua necessário: o novo controle não elimina a exposição da depuração de rede. Bibliotecas/typelib de terceiros não são versionados.
