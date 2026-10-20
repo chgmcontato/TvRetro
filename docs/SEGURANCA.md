@@ -33,3 +33,7 @@ HTTPS somente para thumbnails.libretro.com, sem redirecionamento/ROM upload; cat
 A sessão encerra ao sair da tela, após 10 minutos sem atividade (verificação a cada 10 segundos) ou após 60 minutos absolutos. Conexões aceitas e leituras do corpo renovam a atividade. O limite de 8 minutos por upload permanece. Os callbacks são cancelados ao encerrar.
 
 POSTs rejeitados com corpo pendente recebem a resposta antes de shutdownOutput e descarte limitado a 16 MiB ou 3 segundos. GETs não passam pelo descarte. Arquivos parciais, trava de envio e sockets são liberados no finally. Erros internos ficam apenas no observer; o cliente recebe mensagens fixas e status HTTP apropriados.
+
+## Validação após carga
+
+A verificação do nome cobre caracteres de controle mesmo quando há múltiplas quebras de linha; rejeita antes de criar qualquer arquivo. Uma linha de cabeçalho excessiva é erro de protocolo (400), e prazo de leitura excedido é timeout (408); falhas de armazenamento continuam separadas. O mapeamento não transforma genericamente todas as IOExceptions em erros do cliente.
