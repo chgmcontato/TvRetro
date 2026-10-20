@@ -83,3 +83,11 @@ Trocar entre dois jogos, sair e voltar pelo Home, reconectar Phone Pad após out
 - **Ainda pendentes:** Android 5.x/API 21 real; sessões reais de 10/60 minutos; upload completo na TV; memória e jogabilidade prolongadas; reconexão Bluetooth durante jogo; reinício/restauração após debloat; demais candidatos/launchers/ajustes do script em aparelho. Não há certificação para outras TVs ou auditoria completa de firmware.
 
 Os registros brutos, capturas e builds pessoais permanecem fora do Git. Não publicar dados de rede, conta, serial, tokens, chaves, ROMs, BIOS ou assets particulares ao compartilhar evidências.
+
+## Controle do notebook — etapa 1 inspirada em menu bar
+
+- Interface GTK dividida em Controle, Aplicativos e TV; inventário de apps e RAM/armazenamento sob demanda, seletor HDMI, comandos de reprodução e suspensão com confirmação. Implementação Android/ADB própria, sem código Swift ou assets do projeto de referência.
+- `test_tray_backend.py`: 10 testes locais passaram, cobrindo endereço, componentes inválidos/metacaracteres, deduplicação/limite, argumentos fixos, timeout e parsers. `test_tray_install.py`: 2 testes passaram, incluindo preservação de configuração e instalação do novo módulo.
+- Interface construída com GTK 3 instalado; troca de abas, renderização de apps com nomes longos e isolamento do teclado local foram conferidos. Preview offscreen usado para inspecionar o layout; essa verificação não equivale a testar comandos na TV. A inicialização normal não registrou traceback ou erro crítico no log consultado.
+- Aplicativo do notebook atualizado por usuário e iniciado, mantendo configuração/typelib existentes. Backup dos arquivos anteriores em pasta privada ignorada pelo Git. Nenhum APK ou pacote da TV foi alterado nessa etapa.
+- **Não validado na TCL nesta etapa:** a conexão ADB foi recusada. Abertura de apps, seletor HDMI, leitura real de métricas, reprodução e acordar/suspender precisam de teste em aparelho. Não confundir confirmação de envio ADB com confirmação de efeito do comando em cada firmware. Compatibilidade macOS/LG/Roku não foi implementada.
