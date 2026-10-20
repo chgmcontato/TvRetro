@@ -2,7 +2,7 @@
 
 Uma Android TV de fábrica vem com apps do fabricante e do Google que a maioria das pessoas não usa, ocupam memória e mostram sugestões e anúncios. O script `tools/debloat/tvretro-debloat.sh` ajuda a desativá-los com segurança. Ele é opcional e roda **depois** de instalar o TvRetro.
 
-> **Risco.** Mexer em apps de sistema pode deixar a TV instável. O script foi desenhado para ser conservador e reversível, mas não existe garantia para todos os modelos. Foi testado com um `adb` simulado (`tests/test_debloat.py`) e **ainda não foi validado em uma TV real**. Faça por sua conta e risco.
+> **Risco.** Mexer em apps de sistema pode deixar a TV instável. O script foi desenhado para ser conservador e reversível, mas não existe garantia para todos os modelos. Passou nos testes com `adb` simulado (`tests/test_debloat.py`) e teve **execução real limitada a um pacote em uma TCL Android TV 11**. Reinício, restauração e os demais candidatos não foram validados nessa execução; **não há validação geral do debloat em TV real**. Faça por sua conta e risco.
 
 ## O que o script faz e não faz
 
@@ -74,13 +74,19 @@ adb shell pm enable com.exemplo.pacote     # reativa um app
 2. Se ainda der para conectar por ADB: `tools/debloat/tvretro-debloat.sh --tv IP --undo ARQUIVO` (ou `adb shell pm enable PACOTE`).
 3. Último recurso: restauração de fábrica pelo menu de recuperação da TV. Isso apaga tudo (apps, jogos, saves); consulte o manual do fabricante.
 
+## Execução limitada em aparelho — 2026-10-20
+
+A simulação identificou 23 pacotes previamente desativados, o TvRetro como Home padrão, animações e protetor de tela já desligados. Com confirmação específica, o script desativou somente `com.android.htmlviewer`, registrou a mudança e aguardou 15 segundos. A consulta posterior confirmou 24 pacotes desativados e o TvRetro como Home padrão; Google Play e RetroArch continuaram habilitados.
+
+A TV não foi reiniciada e o comando de desfazer não foi executado. Não foram validadas nessa etapa alterações nos outros candidatos, nos launchers ou nos ajustes. Os testes simulados desses caminhos continuam sendo apenas simulações. A desativação não liberou espaço significativo: APKs de sistema permanecem no firmware. Isso não justifica remover componentes do fabricante para tentar obter espaço. Veja o histórico em [VALIDACAO.md](VALIDACAO.md).
+
 ## Testes
 
 ```bash
 python3 tests/test_debloat.py
 ```
 
-Usam um `adb` falso (`tests/fake-adb.sh`): verificam que nada é alterado em `--dry-run` ou em EOF, que protegidos e apps do usuário nunca são tocados, que só o que foi confirmado é desativado, que `--undo` restaura tudo e que a rede de segurança das telas iniciais funciona. Eles **não** substituem um teste em TV real.
+Usam um `adb` falso (`tests/fake-adb.sh`): verificam que nada é alterado em `--dry-run` ou em EOF, que protegidos e apps do usuário nunca são tocados, que só o que foi confirmado é desativado, que `--undo` restaura tudo e que a rede de segurança das telas iniciais funciona. Eles **não** substituem validação em TV real de cada caminho; a execução limitada descrita acima não cobre todos os cenários.
 
 ## Créditos
 
