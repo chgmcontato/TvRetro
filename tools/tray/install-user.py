@@ -23,7 +23,7 @@ source=Path(__file__).resolve().parent
 destination=Path(os.environ.get('XDG_DATA_HOME',str(Path.home()/'.local/share')))/'tvretro'
 config_home=Path(os.environ.get('XDG_CONFIG_HOME',str(Path.home()/'.config')))
 destination.mkdir(parents=True,exist_ok=True)
-for name in ('tvretro-tray.py','launch.sh','tvretro.svg'):
+for name in ('tvretro-tray.py','remote_backend.py','launch.sh','tvretro.svg'):
  shutil.copy2(source/name,destination/name)
 (destination/'launch.sh').chmod(0o755)
 if a.typelib:

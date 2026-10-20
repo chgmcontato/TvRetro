@@ -42,3 +42,28 @@ Para parar, use **Sair**. Para desativar a inicialização automática, desmarqu
 O controle web antigo em `tools/controle-tv.py` é legado e não faz parte do aplicativo de bandeja. O scrcpy não é dependência do novo app.
 
 Para mostrar o notebook na TV, HDMI continua sendo uma opção separada. Google Cast estava desativado e não foi reativado nesta entrega. No Linux/Wayland não se deve garantir transmissão de tela inteira sem testar. [Documentação do Google](https://support.google.com/chrome/answer/3228332).
+
+## Controle ampliado — etapa 1
+
+A interface agora tem três abas, com as mesmas dependências GTK 3:
+
+- **Controle:** direcional, Home/Voltar, Menu, volume/mudo, reprodução/pausa, anterior/próximo, avançar/retroceder e Informações. As teclas de mídia dependem do app em primeiro plano. Na aba Controle, setas/Enter/Esc enviam comandos à TV; nas outras abas e na configuração, o teclado navega pela interface local.
+- **Aplicativos:** **Carregar apps da TV** consulta activities de TV e de launcher, remove duplicatas e mostra no máximo 100 pacotes. Clique para abrir. Nomes conhecidos recebem rótulos; os demais aparecem pelo pacote, sem baixar ícones ou puxar APKs da TV. A lista é refeita somente quando solicitada e não é salva em arquivo.
+- **TV:** atalho para o seletor de entradas HDMI, configurações do Android, RAM/armazenamento sob demanda, acordar a tela e suspender com confirmação. HDMI abre o seletor da TV; não seleciona automaticamente uma porta. Acordar exige rede e ADB respondendo, e não substitui Wake-on-LAN. Se o firmware recusar uma função, o controle informa indisponibilidade.
+
+Não há coleta de histórico de uso, captura de tela, servidor de mídia ou consulta periódica. A leitura de RAM é `MemAvailable`, não uma soma do consumo de processos; os valores são da última consulta manual. Comandos continuam serializados, com tempo limite e sem fila acumulada. Fechar mantém a bandeja; Sair encerra. Atualize com o mesmo instalador para preservar a configuração e o autostart existentes.
+
+### Referência e próximas etapas
+
+A organização de funções foi inspirada no [TVmenubar-MacOS](https://github.com/gabrielgreco1/TVmenubar-MacOS). Esse projeto usa Swift/macOS e protocolos LG webOS/Roku. A implementação aqui é própria para GTK/Linux e Android TV via ADB: não é um port binário nem promete compatibilidade com os protocolos LG/Roku. Nenhum código Swift, logo ou recurso de marca do projeto foi copiado.
+
+Etapas futuras, sujeitas a teste na TCL: seleção direta de portas HDMI e identificação do app atual; teclado/touchpad; descoberta local e Wake-on-LAN se o firmware permitir. Uso histórico, ajustes de imagem e envio de mídia exigem desenho e validação próprios. Espelhamento permanece fora do escopo solicitado. Essas funções não estão implementadas nesta etapa.
+
+Testes locais sem TV:
+
+```bash
+python3 tests/test_tray_backend.py
+python3 tests/test_tray_install.py
+```
+
+O backend testa validação de endereços/componentes, montagem de argumentos, parsers, limites e falhas, sem acessar configuração privada, GUI ou rede. Testes simulados não comprovam funcionamento de cada comando em todos os firmwares.

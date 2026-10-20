@@ -15,6 +15,7 @@ class InstallTests(unittest.TestCase):
    env=dict(os.environ,XDG_DATA_HOME=str(root/'data'),XDG_CONFIG_HOME=str(root/'config'))
    run=lambda *args: subprocess.run([sys.executable,str(INSTALLER),*args],env=env,capture_output=True,text=True)
    self.assertEqual(run('--tv','192.0.2.42','--autostart').returncode,0)
+   self.assertTrue((root/'data/tvretro/remote_backend.py').is_file())
    config=root/'config/tvretro/config.json'
    self.assertEqual(json.loads(config.read_text())['tv'],'192.0.2.42:5555')
    self.assertEqual(config.stat().st_mode & 0o777,0o600)
