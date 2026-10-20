@@ -396,7 +396,7 @@ public class MainActivity extends Activity {
     private String scanLibraryStamp(){StringBuilder signature=new StringBuilder();for(File dir:gameDirectories()){signature.append(dir.getAbsolutePath());File[] files=dir.listFiles();if(files!=null){java.util.Arrays.sort(files,(a,b)->a.getName().compareTo(b.getName()));for(File f:files)signature.append(f.getName()).append(':').append(f.length()).append(':').append(f.lastModified()).append(';');}}return signature.toString();}
     @Override public void onTrimMemory(int level){super.onTrimMemory(level);if(level>=android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW)releaseImages();}
     private void buildGames(){root.setMinimumHeight(px(1080));int margin=px(MARGIN);
-        if(checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED){addTile(root,"games:permission","Permitir acesso aos jogos",null,LineIcon.PLUS,null,margin,px(500),px(470),px(190));return;}
+        if(!PlatformCompat.hasPermission(this,android.Manifest.permission.READ_EXTERNAL_STORAGE)){addTile(root,"games:permission","Permitir acesso aos jogos",null,LineIcon.PLUS,null,margin,px(500),px(470),px(190));return;}
         if(!libraryReady&&!libraryLoading)scanGames();
         java.util.List<File> files=libraryFiles;
         android.widget.HorizontalScrollView shelf=new android.widget.HorizontalScrollView(this);shelf.setHorizontalScrollBarEnabled(false);shelf.setClipChildren(false);shelf.setClipToPadding(false);shelf.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);shelf.setFocusable(false);FrameLayout track=new FrameLayout(this);track.setClipChildren(false);
@@ -533,7 +533,7 @@ public class MainActivity extends Activity {
 
     private void open(String key) {
         if(key.startsWith("game:")){launchGame(key.substring(5));return;}
-        if(key.equals("games:permission")){requestPermissions(new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE},20);return;}
+        if(key.equals("games:permission")){PlatformCompat.requestPermissions(this,new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE},20);return;}
         if(key.equals("games:transfer")){startActivity(new Intent(this,TransferActivity.class));return;}
         if(key.equals("games:refresh")){scanGames();return;}
         Intent i;
