@@ -38,7 +38,7 @@ O jogo em si roda no **RetroArch**, que você instala separadamente. O TvRetro s
 
 ## O que você precisa
 
-- Uma **Android TV ou Google TV** (Android 5.0 ou mais novo) na mesma rede Wi-Fi/cabo do seu computador.
+- Uma **Android TV ou Google TV** (Android 5.0 ou mais novo; compatibilidade 5.x ainda não validada em aparelho) na mesma rede Wi-Fi/cabo do seu computador.
 - Um **computador** (Linux, macOS ou Windows com WSL) para compilar e instalar.
 - Um **celular** ou o próprio computador para enviar os jogos (opcional se você usar pendrive).
 - Alguns GB livres na TV, ou um pendrive. TVs baratas têm pouco armazenamento: o receptor de jogos sempre deixa **550 MiB livres** e recusa envios que passem disso.
@@ -435,8 +435,11 @@ Rodar os testes (precisa de JDK 17 com `javac`):
 python3 tests/test_transfer.py
 python3 tests/test_catalog.py
 python3 tests/test_transfer_status.py
+python3 tests/test_transfer_validation.py
+python3 tests/test_platform_compat.py
 python3 tests/test_tray_install.py
 python3 tests/test_debloat.py     # não precisa de JDK nem de TV
+python3 tests/test_transfer_stress.py  # carga sintética opcional; sem TV/ROMs
 ```
 
 Mais detalhes: [capas e consumo de rede](docs/CAPAS-E-REDE.md) e [uso de pendrive](docs/PENDRIVE.md).
