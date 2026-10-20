@@ -1,0 +1,7 @@
+# Telas iniciais originais conhecidas. Só são desativadas pelo passo --launchers,
+# depois que o TvRetro for a tela inicial padrão, e nunca se forem PERSISTENT.
+com.google.android.tvlauncher
+com.google.android.apps.tv.launcherx
+com.google.android.leanbacklauncher
+com.mitv.tvhome
+com.amazon.tv.launcher

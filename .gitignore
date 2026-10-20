@@ -25,3 +25,9 @@ apps/tv-casa/assets/covers/
 *.deb
 
 apps/tv-casa/assets/cover-hints.properties
+
+# debloat: registros e relatórios do seu aparelho
+tv-changes-*.txt
+tv-pacotes-antes-*.txt
+tv-revisar-*.txt
+tools/debloat/lists/pessoal.txt

@@ -1,3 +1,3 @@
 import com.ansub.tvhome.LocalTransferServer;
 import java.io.*;
-public class Harness {public static void main(String[] args)throws Exception{LocalTransferServer s=new LocalTransferServer(new File(args[0]),Long.parseLong(args[1]),message->{});System.out.println(s.port()+" "+s.token);System.out.flush();new BufferedReader(new InputStreamReader(System.in)).readLine();s.close();}}
+public class Harness {public static void main(String[] args)throws Exception{LocalTransferServer s=new LocalTransferServer(new File(args[0]),Long.parseLong(args[1]),message->{});if(args.length>2){long idle=Long.parseLong(args[2]);Thread monitor=new Thread(()->{try{while(s.idleMillis()<=idle)Thread.sleep(50);s.close();}catch(InterruptedException e){Thread.currentThread().interrupt();}});monitor.setDaemon(true);monitor.start();}System.out.println(s.port()+" "+s.token);System.out.flush();new BufferedReader(new InputStreamReader(System.in)).readLine();s.close();}}
