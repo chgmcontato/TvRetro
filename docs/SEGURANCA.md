@@ -24,3 +24,6 @@ O aplicativo GTK não abre portas HTTP nem captura vídeo/áudio. Usa ADB já au
 
 ## Capas0.9
 HTTPS somente para thumbnails.libretro.com, sem redirecionamento/ROM upload; catálogo/arquivos/dimensões limitados e worker único. Não há cache de imagens em disco. Nomes ambíguos não geram associação automática arbitrária. Veja docs/CAPAS-E-REDE.md.
+
+## Debloat (opcional)
+`tools/debloat/tvretro-debloat.sh` só desativa pacotes (`pm disable-user --user 0`), nunca desinstala; pede confirmação item a item, respeita uma lista de pacotes protegidos e a lista de apps do usuário, registra tudo e permite desfazer. Pacotes de fabricantes não entram sozinhos: vão para um relatório de revisão. Veja docs/DEBLOAT.md.

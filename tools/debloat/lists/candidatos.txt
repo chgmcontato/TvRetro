@@ -1,0 +1,16 @@
+# pacote|quando|descrição
+# quando: "-" = pode ser oferecido agora; "home" = só depois que o TvRetro for a tela inicial padrão.
+# Lista curta e conservadora, de apps comuns em Android TV/Google TV que a maioria das
+# pessoas não usa. Os nomes de pacote mudam entre versões e fabricantes: o que não estiver
+# instalado é ignorado. Nada daqui é desinstalado, apenas desativado (reversível).
+com.google.android.videos|-|Google TV / Play Filmes (loja e recomendações de filmes)
+com.google.android.play.games|-|Play Games
+com.google.android.youtube.tvmusic|-|YouTube Music para TV
+com.google.android.apps.tv.dreamx|-|Protetor de tela ambiente do Google TV
+com.google.android.leanbacklauncher.recommendations|home|Sugestões e anúncios da tela inicial original
+com.google.android.tvrecommendations|home|Recomendações e canais patrocinados da tela inicial original
+com.android.egg|-|Easter egg do Android
+com.android.printspooler|-|Serviço de impressão
+com.android.bips|-|Serviço de impressão padrão
+com.android.htmlviewer|-|Visualizador de arquivos HTML
+com.android.traceur|-|Rastreamento do sistema (ferramenta de desenvolvedor)

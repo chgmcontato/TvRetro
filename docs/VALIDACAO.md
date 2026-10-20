@@ -32,3 +32,8 @@ Trocar entre dois jogos, sair e voltar pelo Home, reconectar Phone Pad após out
 - Fallback sem imagem é parte da implementação; Wi-Fi da TV não foi desativado para simular indisponibilidade. Não se afirma teste completo de todas as falhas de rede ou catálogo.
 - Nove ROMs e saves mantidos no armazenamento interno; thumbnails públicos já vazios. Sem formatação ou migração de USB. No teste após retirar as imagens do APK, aproximadamente539MiB livres.
 - Não foi feito teste longo de emulação/desempenho. Catálogo online e correspondência por nome podem mudar ou não incluir um título; isso não impede abrir a ROM.
+
+## Debloat guiado (tools/debloat)
+
+- Testes automatizados com `adb` simulado (`python3 tests/test_debloat.py`, 12 cenários): simulação sem alterar nada, protegidos e apps do usuário intocados, só o confirmado é desativado, desfazer pelo registro e pela lista da TV, telas iniciais condicionadas ao TvRetro, apps persistentes preservados e reativação automática quando a Home deixa de abrir o TvRetro.
+- **Não validado em TV real.** O comportamento de `pm disable-user`, `cmd package` e dos nomes de pacote varia entre fabricantes e versões do Android. Tratar a primeira execução em cada modelo como experimental.
